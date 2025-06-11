@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MedCenter - Médicos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Paleta de Cores Médica: Laranja e Azul */
+            --primary-color: #FF8C00; /* Laranja escuro - Cor Principal */
+            --primary-dark: #D2691E; /* Laranja queimado */
+            --primary-light: #FFA500; /* Laranja padrão */
+            --secondary-color: #4682B4; /* Azul aço */
+            --secondary-dark: #1E4D6B; /* Azul marinho mais escuro */
+            --secondary-light: #87CEEB; /* Azul céu */
+            --white: #FFFFFF; /* Branco puro */
+            --gray-light: #F5F5F5; /* Cinza claro */
+            --gray-medium: #808080; /* Cinza médio */
+            --black: #1A1A1A; /* Preto suavizado */
+            
+            /* Cores de Status */
+            --confirmed-color: #4CAF50;
+            --pending-color: #FF9800;
+            --cancelled-color: #F44336;
+            
+            /* Sombras e Efeitos */
+            --card-shadow: 0 8px 32px rgba(210, 105, 30, 0.15);
+            --hover-shadow: 0 12px 40px rgba(210, 105, 30, 0.25);
+            --sidebar-bg: #1E4D6B; /* Azul escuro para sidebar */
+            --sidebar-hover: #2C5D7A;
+            --sidebar-width: 280px;
+            --mobile-header-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            color: var(--black);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--white);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(26, 26, 26, 0.15);
+            position: relative;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-img {
+            width: 120px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--gray-light);
+        }
+
+        .menu-item {
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            color: var(--gray-light);
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .menu-item.active {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--white);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gray-light);
+            padding-bottom: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: var(--gray-medium);
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--gray-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--black);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            color: var(--gray-medium);
+            font-size: 14px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(26, 26, 26, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(26, 26, 26, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+            border: 1px solid var(--gray-light);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--gray-medium);
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            color: var(--black);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--gray-medium);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #666666;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--cancelled-color);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 992px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .sidebar.sidebar-active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: var(--mobile-header-height) 15px 15px;
+                width: 100%;
+            }
+            
+            .header {
+                padding-top: 20px;
+                margin-top: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .btn {
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <img src="https://i.ibb.co/MyPPcBhc/download-1.jpg" alt="MedCenter Logo" class="logo-img">
+                <div class="logo-text">MultSaude</div>
+                <div class="logo-subtitle">Clínica Bim</div>
+            </div>
+            <a href="resumo.html" class="menu-item">Resumo <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="agenda.html" class="menu-item">Agenda <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="pacientes.html" class="menu-item">Pacientes</a>
+            <a href="medicos.html" class="menu-item active">Médicos</a>
+            <a href="disparo-campanha.html" class="menu-item">Disparo de campanha</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Médicos</h1>
+                    <p class="page-subtitle">Gerencie os profissionais</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addDoctorBtn">+ Novo Médico</button>
+                </div>
+            </div>
+
+            <!-- Doctors Cards -->
+            <div class="dashboard-grid" id="doctorsGrid">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing Doctors -->
+    <div class="modal" id="doctorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="doctorModalTitle">Novo Médico</h3>
+                <span class="close-btn" id="closeDoctorModal">&times;</span>
+            </div>
+            <form id="doctorForm">
+                <input type="hidden" id="doctorId">
+                <div class="form-group">
+                    <label for="doctorName">Nome Completo:</label>
+                    <input type="text" id="doctorName" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorSpecialty">Especialidade:</label>
+                    <select id="doctorSpecialty" required>
+                        <option value="cardiologia">Cardiologia</option>
+                        <option value="dermatologia">Dermatologia</option>
+                        <option value="pediatria">Pediatria</option>
+                        <option value="ortopedia">Ortopedia</option>
+                        <option value="clinico">Clínico Geral</option>
+                        <option value="ginecologia">Ginecologia</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctorCRM">CRM:</label>
+                    <input type="text" id="doctorCRM" placeholder="SP-123456" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorPhone">Telefone:</label>
+                    <input type="tel" id="doctorPhone" placeholder="(11) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label for="doctorEmail">E-mail:</label>
+                    <input type="email" id="doctorEmail" placeholder="medico@clinica.com">
+                </div>
+                <div class="form-group">
+                    <label for="doctorOffice">Consultório:</label>
+                    <select id="doctorOffice" required>
+                        <option value="consultorio1">Consultório 1</option>
+                        <option value="consultorio2">Consultório 2</option>
+                        <option value="consultorio3">Consultório 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctorSchedule">Horário de Atendimento:</label>
+                    <textarea id="doctorSchedule" placeholder="Ex: Segunda a Sexta, 08:00 às 18:00"></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteDoctorBtn" style="display: none;">Excluir</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let doctors = [
+            {
+                id: 1,
+                name: "Dr. Carlos Silva",
+                specialty: "cardiologia",
+                crm: "SP-123456",
+                phone: "(11) 99999-1001",
+                email: "carlos.silva@clinica.com",
+                office: "consultorio1",
+                schedule: "Segunda a Sexta: 08:00 - 18:00"
+            },
+            {
+                id: 2,
+                name: "Dra. Ana Santos",
+                specialty: "dermatologia",
+                crm: "SP-654321",
+                phone: "(11) 99999-1002",
+                email: "ana.santos@clinica.com",
+                office: "consultorio2",
+                schedule: "Segunda a Quinta: 09:00 - 17:00"
+            },
+            {
+                id: 3,
+                name: "Dr. Pedro Oliveira",
+                specialty: "pediatria",
+                crm: "SP-789012",
+                phone: "(11) 99999-1003",
+                email: "pedro.oliveira@clinica.com",
+                office: "consultorio1",
+                schedule: "Terça a Sábado: 08:00 - 16:00"
+            },
+            {
+                id: 4,
+                name: "Dra. Maria Fernandes",
+                specialty: "ortopedia",
+                crm: "SP-345678",
+                phone: "(11) 99999-1004",
+                email: "maria.fernandes@clinica.com",
+                office: "consultorio3",
+                schedule: "Segunda a Sexta: 10:00 - 18:00"
+            }
+        ];
+
+        // Mobile menu button
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+        
+        // Overlay click to close sidebar
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('sidebar-active');
+            overlay.style.display = sidebar.classList.contains('sidebar-active') ? 'block' : 'none';
+        }
+        
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('sidebar-active');
+            document.getElementById('sidebarOverlay').style.display = 'none';
+        }
+
+        // Doctor functions
+        function renderDoctorsGrid() {
+            const grid = document.getElementById('doctorsGrid');
+            grid.innerHTML = '';
+            
+            doctors.forEach(doctor => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const specialtyName = getSpecialtyName(doctor.specialty);
+                const officeName = getOfficeName(doctor.office);
+                
+                card.innerHTML = `
+                    <div class="card-title">
+                        <i class="fas fa-user-md"></i> ${doctor.name}
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Especialidade</div>
+                        <div class="detail-value">${specialtyName}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">CRM</div>
+                        <div class="detail-value">${doctor.crm}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Telefone</div>
+                        <div class="detail-value">${doctor.phone || 'Não informado'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">E-mail</div>
+                        <div class="detail-value">${doctor.email || 'Não informado'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Consultório</div>
+                        <div class="detail-value">${officeName}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Horário de Atendimento</div>
+                        <div class="detail-value">${doctor.schedule || 'Não informado'}</div>
+                    </div>
+                    <div class="modal-footer" style="border-top: none; padding-top: 0; margin-top: 15px;">
+                        <button class="btn btn-secondary btn-small" onclick="editDoctor(${doctor.id})">Editar</button>
+                        <button class="btn btn-primary btn-small" onclick="viewDoctorSchedule(${doctor.id})">Agenda</button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function getSpecialtyName(specialty) {
+            const specialties = {
+                'cardiologia': 'Cardiologia',
+                'dermatologia': 'Dermatologia',
+                'pediatria': 'Pediatria',
+                'ortopedia': 'Ortopedia',
+                'clinico': 'Clínico Geral',
+                'ginecologia': 'Ginecologia'
+            };
+            return specialties[specialty] || specialty;
+        }
+
+        function getOfficeName(office) {
+            const offices = {
+                'consultorio1': 'Consultório 1',
+                'consultorio2': 'Consultório 2',
+                'consultorio3': 'Consultório 3'
+            };
+            return offices[office] || office;
+        }
+
+        function editDoctor(doctorId) {
+            const doctor = doctors.find(d => d.id === doctorId);
+            if (doctor) {
+                openDoctorModal(doctor);
+            }
+        }
+
+        function viewDoctorSchedule(doctorId) {
+            // Redirect to agenda page with doctor filter
+            window.location.href = `agenda.html?doctor=${doctorId}`;
+        }
+
+        function openDoctorModal(doctor = null) {
+            const modal = document.getElementById('doctorModal');
+            const modalTitle = document.getElementById('doctorModalTitle');
+            const form = document.getElementById('doctorForm');
+            const deleteBtn = document.getElementById('deleteDoctorBtn');
+            
+            form.reset();
+            
+            if (doctor) {
+                modalTitle.textContent = 'Editar Médico';
+                document.getElementById('doctorId').value = doctor.id;
+                document.getElementById('doctorName').value = doctor.name;
+                document.getElementById('doctorSpecialty').value = doctor.specialty;
+                document.getElementById('doctorCRM').value = doctor.crm;
+                document.getElementById('doctorPhone').value = doctor.phone || '';
+                document.getElementById('doctorEmail').value = doctor.email || '';
+                document.getElementById('doctorOffice').value = doctor.office;
+                document.getElementById('doctorSchedule').value = doctor.schedule || '';
+                deleteBtn.style.display = 'block';
+            } else {
+                modalTitle.textContent = 'Novo Médico';
+                document.getElementById('doctorId').value = '';
+                deleteBtn.style.display = 'none';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modals
+            document.getElementById('closeDoctorModal').addEventListener('click', () => {
+                document.getElementById('doctorModal').style.display = 'none';
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                const doctorModal = document.getElementById('doctorModal');
+                
+                if (e.target === doctorModal) {
+                    doctorModal.style.display = 'none';
+                }
+            });
+
+            // Add doctor button
+            document.getElementById('addDoctorBtn').addEventListener('click', () => {
+                openDoctorModal();
+            });
+
+            // Doctor form
+            document.getElementById('doctorForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const id = document.getElementById('doctorId').value;
+                const name = document.getElementById('doctorName').value;
+                const specialty = document.getElementById('doctorSpecialty').value;
+                const crm = document.getElementById('doctorCRM').value;
+                const phone = document.getElementById('doctorPhone').value;
+                const email = document.getElementById('doctorEmail').value;
+                const office = document.getElementById('doctorOffice').value;
+                const schedule = document.getElementById('doctorSchedule').value;
+                
+                if (id) {
+                    const index = doctors.findIndex(d => d.id == id);
+                    if (index !== -1) {
+                        doctors[index] = {
+                            id: parseInt(id),
+                            name,
+                            specialty,
+                            crm,
+                            phone,
+                            email,
+                            office,
+                            schedule
+                        };
+                    }
+                } else {
+                    const newId = Math.max(0, ...doctors.map(d => d.id)) + 1;
+                    doctors.push({
+                        id: newId,
+                        name,
+                        specialty,
+                        crm,
+                        phone,
+                        email,
+                        office,
+                        schedule
+                    });
+                }
+                
+                renderDoctorsGrid();
+                document.getElementById('doctorModal').style.display = 'none';
+            });
+
+            // Delete button
+            document.getElementById('deleteDoctorBtn').addEventListener('click', () => {
+                const id = document.getElementById('doctorId').value;
+                if (id && confirm('Tem certeza que deseja excluir este médico?')) {
+                    doctors = doctors.filter(d => d.id != id);
+                    renderDoctorsGrid();
+                    document.getElementById('doctorModal').style.display = 'none';
+                }
+            });
+
+            // Initialize
+            renderDoctorsGrid();
+        });
+    </script>
+</body>
+</html>

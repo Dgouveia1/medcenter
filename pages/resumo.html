@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MedCenter - Resumo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Paleta de Cores Médica: Laranja e Azul */
+            --primary-color: #FF8C00; /* Laranja escuro - Cor Principal */
+            --primary-dark: #D2691E; /* Laranja queimado */
+            --primary-light: #FFA500; /* Laranja padrão */
+            --secondary-color: #4682B4; /* Azul aço */
+            --secondary-dark: #1E4D6B; /* Azul marinho mais escuro */
+            --secondary-light: #87CEEB; /* Azul céu */
+            --white: #FFFFFF; /* Branco puro */
+            --gray-light: #F5F5F5; /* Cinza claro */
+            --gray-medium: #808080; /* Cinza médio */
+            --black: #1A1A1A; /* Preto suavizado */
+            
+            /* Cores de Status */
+            --confirmed-color: #4CAF50;
+            --pending-color: #FF9800;
+            --cancelled-color: #F44336;
+            
+            /* Sombras e Efeitos */
+            --card-shadow: 0 8px 32px rgba(210, 105, 30, 0.15);
+            --hover-shadow: 0 12px 40px rgba(210, 105, 30, 0.25);
+            --sidebar-bg: #1E4D6B; /* Azul escuro para sidebar */
+            --sidebar-hover: #2C5D7A;
+            --sidebar-width: 280px;
+            --mobile-header-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            color: var(--black);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--white);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(26, 26, 26, 0.15);
+            position: relative;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-img {
+            width: 120px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--gray-light);
+        }
+
+        .menu-item {
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            color: var(--gray-light);
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .menu-item.active {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--white);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gray-light);
+            padding-bottom: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: var(--gray-medium);
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--gray-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--gray-medium);
+        }
+
+        .metric-change {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .metric-change.positive {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .metric-change.negative {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chart-small {
+            height: 200px;
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 992px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .sidebar.sidebar-active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: var(--mobile-header-height) 15px 15px;
+                width: 100%;
+            }
+            
+            .header {
+                padding-top: 20px;
+                margin-top: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .metric-value {
+                font-size: 28px;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .chart-small {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <img src="https://i.ibb.co/MyPPcBhc/download-1.jpg" alt="MedCenter Logo" class="logo-img">
+                <div class="logo-text">MultSaude</div>
+                <div class="logo-subtitle">Clínica Bim</div>
+            </div>
+            <a href="resumo.html" class="menu-item active">Resumo <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="agenda.html" class="menu-item">Agenda <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="pacientes.html" class="menu-item">Pacientes</a>
+            <a href="medicos.html" class="menu-item">Médicos</a>
+            <a href="disparo-campanha.html" class="menu-item">Disparo de campanha</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Resumo</h1>
+                    <p class="page-subtitle">Visão geral da clínica</p>
+                </div>
+                <div class="header-actions">
+                    <select id="periodoFiltro" class="btn btn-secondary">
+                        <option value="hoje">Hoje</option>
+                        <option value="semana">Esta Semana</option>
+                        <option value="mes" selected>Este Mês</option>
+                        <option value="ano">Este Ano</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="dashboard-grid">
+                <div class="card metric-card">
+                    <div class="card-title"><i class="fas fa-calendar-check"></i> Volume de Atendimentos</div>
+                    <div class="metric-value">248</div>
+                    <div class="metric-label">consultas</div>
+                    <div class="metric-change positive">+12% vs mês anterior</div>
+                </div>
+                
+                <div class="card metric-card">
+                    <div class="card-title"><i class="fas fa-user-plus"></i> Novos Pacientes</div>
+                    <div class="metric-value">42</div>
+                    <div class="metric-label">este mês</div>
+                    <div class="metric-change positive">+15% vs mês anterior</div>
+                </div>
+                
+                <div class="card metric-card">
+                    <div class="card-title"><i class="fas fa-percentage"></i> Taxa de Ocupação</div>
+                    <div class="metric-value">85%</div>
+                    <div class="metric-label">dos horários</div>
+                    <div class="metric-change positive">+7% vs mês anterior</div>
+                </div>
+                
+                <div class="card metric-card">
+                    <div class="card-title"><i class="fas fa-money-bill-wave"></i> Faturamento</div>
+                    <div class="metric-value">R$ 87.450</div>
+                    <div class="metric-label">este mês</div>
+                    <div class="metric-change positive">+9% vs mês anterior</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-title">Atendimentos por Especialidade</div>
+                    <div class="chart-container">
+                        <canvas id="especialidadesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Atendimentos por Perfil de Paciente</div>
+                    <div class="chart-container">
+                        <canvas id="perfilPacienteChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Charts -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-title">Atendimentos por Faixa Etária</div>
+                    <div class="chart-container">
+                        <canvas id="faixaEtariaChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Atendimentos por Cidade</div>
+                    <div class="chart-container">
+                        <canvas id="cidadeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Analysis -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-title">Tendência de Atendimentos</div>
+                    <div class="chart-container">
+                        <canvas id="tendenciaChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Distribuição por Convênio</div>
+                    <div class="chart-container">
+                        <canvas id="convenioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu button
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+        
+        // Overlay click to close sidebar
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('sidebar-active');
+            overlay.style.display = sidebar.classList.contains('sidebar-active') ? 'block' : 'none';
+        }
+        
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('sidebar-active');
+            document.getElementById('sidebarOverlay').style.display = 'none';
+        }
+
+        // Inicializar gráficos quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            
+            // Atualizar gráficos quando o filtro de período mudar
+            document.getElementById('periodoFiltro').addEventListener('change', function() {
+                updateCharts(this.value);
+            });
+        });
+
+        function initCharts() {
+            // Gráfico de Especialidades
+            const especialidadesCtx = document.getElementById('especialidadesChart').getContext('2d');
+            new Chart(especialidadesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cardiologia', 'Dermatologia', 'Pediatria', 'Ortopedia', 'Clínico Geral', 'Ginecologia'],
+                    datasets: [{
+                        data: [65, 45, 38, 42, 58, 32],
+                        backgroundColor: [
+                            '#FF8C00',
+                            '#4682B4',
+                            '#87CEEB',
+                            '#1E4D6B',
+                            '#D2691E',
+                            '#FFA500'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Perfil de Paciente
+            const perfilPacienteCtx = document.getElementById('perfilPacienteChart').getContext('2d');
+            new Chart(perfilPacienteCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Convênio', 'Particular', 'Plano Empresarial', 'Plano Familiar'],
+                    datasets: [{
+                        data: [120, 68, 35, 25],
+                        backgroundColor: [
+                            '#4682B4',
+                            '#FF8C00',
+                            '#87CEEB',
+                            '#1E4D6B'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Faixa Etária
+            const faixaEtariaCtx = document.getElementById('faixaEtariaChart').getContext('2d');
+            new Chart(faixaEtariaCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-12', '13-18', '19-30', '31-45', '46-60', '61+'],
+                    datasets: [{
+                        label: 'Pacientes',
+                        data: [28, 15, 42, 75, 58, 30],
+                        backgroundColor: 'rgba(255, 140, 0, 0.8)',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Cidade
+            const cidadeCtx = document.getElementById('cidadeChart').getContext('2d');
+            new Chart(cidadeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['São Paulo', 'Guarulhos', 'Santo André', 'São Bernardo', 'Osasco', 'Outros'],
+                    datasets: [{
+                        label: 'Pacientes',
+                        data: [120, 45, 32, 28, 15, 8],
+                        backgroundColor: 'rgba(70, 130, 180, 0.8)',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Tendência
+            const tendenciaCtx = document.getElementById('tendenciaChart').getContext('2d');
+            new Chart(tendenciaCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: 'Atendimentos',
+                        data: [180, 195, 210, 205, 220, 235, 225, 240, 248, 0, 0, 0],
+                        borderColor: '#FF8C00',
+                        backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Convênio
+            const convenioCtx = document.getElementById('convenioChart').getContext('2d');
+            new Chart(convenioCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Unimed', 'Amil', 'SulAmérica', 'Bradesco', 'Particular', 'Outros'],
+                    datasets: [{
+                        data: [85, 65, 45, 35, 68, 12],
+                        backgroundColor: [
+                            '#4682B4',
+                            '#FF8C00',
+                            '#87CEEB',
+                            '#1E4D6B',
+                            '#D2691E',
+                            '#FFA500'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(periodo) {
+            // Aqui você implementaria a lógica para atualizar os gráficos com base no período selecionado
+            console.log(`Atualizando gráficos para o período: ${periodo}`);
+            // Esta função seria implementada com dados reais em um ambiente de produção
+        }
+    </script>
+</body>
+</html>

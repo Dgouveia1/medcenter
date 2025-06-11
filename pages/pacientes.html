@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MedCenter - Pacientes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Paleta de Cores Médica: Laranja e Azul */
+            --primary-color: #FF8C00; /* Laranja escuro - Cor Principal */
+            --primary-dark: #D2691E; /* Laranja queimado */
+            --primary-light: #FFA500; /* Laranja padrão */
+            --secondary-color: #4682B4; /* Azul aço */
+            --secondary-dark: #1E4D6B; /* Azul marinho mais escuro */
+            --secondary-light: #87CEEB; /* Azul céu */
+            --white: #FFFFFF; /* Branco puro */
+            --gray-light: #F5F5F5; /* Cinza claro */
+            --gray-medium: #808080; /* Cinza médio */
+            --black: #1A1A1A; /* Preto suavizado */
+            
+            /* Cores de Status */
+            --confirmed-color: #4CAF50;
+            --pending-color: #FF9800;
+            --cancelled-color: #F44336;
+            
+            /* Sombras e Efeitos */
+            --card-shadow: 0 8px 32px rgba(210, 105, 30, 0.15);
+            --hover-shadow: 0 12px 40px rgba(210, 105, 30, 0.25);
+            --sidebar-bg: #1E4D6B; /* Azul escuro para sidebar */
+            --sidebar-hover: #2C5D7A;
+            --sidebar-width: 280px;
+            --mobile-header-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            color: var(--black);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--white);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(26, 26, 26, 0.15);
+            position: relative;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-img {
+            width: 120px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--gray-light);
+        }
+
+        .menu-item {
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            color: var(--gray-light);
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .menu-item.active {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--white);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gray-light);
+            padding-bottom: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: var(--gray-medium);
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Patients Section - New Table Format */
+        .clients-controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            color: var(--black);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            padding: 8px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 20px;
+            background: var(--white);
+            color: var(--gray-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .filter-tag.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .filter-tag:hover {
+            border-color: var(--primary-color);
+        }
+
+        .clients-table-container {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--gray-light);
+            overflow-x: auto;
+        }
+
+        .clients-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .clients-table th {
+            background: var(--gray-light);
+            color: var(--black);
+            font-weight: 600;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--primary-color);
+            font-size: 14px;
+        }
+
+        .clients-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid var(--gray-light);
+            color: var(--black);
+            font-size: 14px;
+        }
+
+        .clients-table tr:hover {
+            background: rgba(255, 140, 0, 0.05);
+        }
+
+        .client-name-cell {
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .client-tags-cell {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .tag {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .client-actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(26, 26, 26, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(26, 26, 26, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+            border: 1px solid var(--gray-light);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--gray-medium);
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            color: var(--black);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            min-height: 50px;
+            cursor: text;
+        }
+
+        .tags-input:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+
+        .tag-item {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            font-family: 'Poppins', sans-serif;
+            color: var(--black);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+
+        .btn-success {
+            background: var(--confirmed-color);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--cancelled-color);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--gray-medium);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #666666;
+            transform: translateY(-2px);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 992px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .sidebar.sidebar-active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: var(--mobile-header-height) 15px 15px;
+                width: 100%;
+            }
+            
+            .header {
+                padding-top: 20px;
+                margin-top: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .clients-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                min-width: auto;
+            }
+
+            .filters-container {
+                justify-content: center;
+            }
+            
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .btn {
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <img src="https://i.ibb.co/MyPPcBhc/download-1.jpg" alt="MedCenter Logo" class="logo-img">
+                <div class="logo-text">MultSaude</div>
+                <div class="logo-subtitle">Clínica Bim</div>
+            </div>
+            <a href="resumo.html" class="menu-item">Resumo <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="agenda.html" class="menu-item">Agenda <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="pacientes.html" class="menu-item active">Pacientes</a>
+            <a href="medicos.html" class="menu-item">Médicos</a>
+            <a href="disparo-campanha.html" class="menu-item">Disparo de campanha</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Pacientes</h1>
+                    <p class="page-subtitle">Gerencie seus pacientes</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="addClientBtn">+ Novo Paciente</button>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="clients-controls">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nome ou telefone...">
+                </div>
+                <div class="filters-container">
+                    <div class="filter-tag active" data-tag="all">Todos</div>
+                    <div class="filter-tag" data-tag="cardiologia">Cardiologia</div>
+                    <div class="filter-tag" data-tag="dermatologia">Dermatologia</div>
+                    <div class="filter-tag" data-tag="pediatria">Pediatria</div>
+                    <div class="filter-tag" data-tag="ortopedia">Ortopedia</div>
+                    <div class="filter-tag" data-tag="particular">Particular</div>
+                </div>
+            </div>
+
+            <!-- Patients Table -->
+            <div class="clients-table-container">
+                <table class="clients-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Cidade</th>
+                            <th>Convênio</th>
+                            <th>Idade</th>
+                            <th>Paciente há</th>
+                            <th>Tags</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <!-- Table content will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing Patients -->
+    <div class="modal" id="clientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="clientModalTitle">Novo Paciente</h3>
+                <span class="close-btn" id="closeClientModal">&times;</span>
+            </div>
+            <form id="clientForm">
+                <input type="hidden" id="clientId">
+                <div class="form-group">
+                    <label for="clientFullName">Nome Completo:</label>
+                    <input type="text" id="clientFullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhoneNumber">Telefone:</label>
+                    <input type="tel" id="clientPhoneNumber" placeholder="(11) 99999-9999" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">E-mail:</label>
+                    <input type="email" id="clientEmail" placeholder="paciente@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="clientCity">Cidade:</label>
+                    <input type="text" id="clientCity" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientBirthDate">Data de Nascimento:</label>
+                    <input type="date" id="clientBirthDate">
+                </div>
+                <div class="form-group">
+                    <label for="clientFirstExperience">Primeira Consulta:</label>
+                    <input type="date" id="clientFirstExperience">
+                </div>
+                <div class="form-group">
+                    <label for="clientInsurance">Convênio:</label>
+                    <select id="clientInsurance">
+                        <option value="particular">Particular</option>
+                        <option value="unimed">Unimed</option>
+                        <option value="amil">Amil</option>
+                        <option value="sulamerica">SulAmérica</option>
+                        <option value="bradesco">Bradesco Saúde</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tags:</label>
+                    <div class="tags-input" id="tagsInput">
+                        <input type="text" class="tag-input" id="tagInput" placeholder="Digite uma tag e pressione Enter">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteClientBtn" style="display: none;">Excluir</button>
+                    <button type="submit" class="btn btn-primary" id="saveClientBtn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let patients = [
+            {
+                id: 1,
+                name: "Maria Silva",
+                phone: "(11) 99999-1111",
+                email: "maria.silva@email.com",
+                city: "São Paulo",
+                birthDate: "1990-05-15",
+                firstExperience: "2024-01-15",
+                insurance: "unimed",
+                tags: ["hipertensão", "check-up anual"]
+            },
+            {
+                id: 2,
+                name: "Joana Santos",
+                phone: "(11) 99999-2222",
+                email: "joana.santos@email.com",
+                city: "São Paulo",
+                birthDate: "1985-08-22",
+                firstExperience: "2024-03-10",
+                insurance: "amil",
+                tags: ["dermatite", "alergia"]
+            },
+            {
+                id: 3,
+                name: "Ana Costa",
+                phone: "(11) 99999-3333",
+                email: "ana.costa@email.com",
+                city: "Guarulhos",
+                birthDate: "1992-12-03",
+                firstExperience: "2023-11-20",
+                insurance: "particular",
+                tags: ["pediatria", "vacinação"]
+            },
+            {
+                id: 4,
+                name: "Beatriz Lima",
+                phone: "(11) 99999-4444",
+                email: "beatriz.lima@email.com",
+                city: "São Caetano",
+                birthDate: "1988-04-18",
+                firstExperience: "2024-02-14",
+                insurance: "sulamerica",
+                tags: ["fratura", "ortopedia"]
+            },
+            {
+                id: 5,
+                name: "Carla Mendes",
+                phone: "(11) 99999-5555",
+                email: "carla.mendes@email.com",
+                city: "Santo André",
+                birthDate: "1995-09-07",
+                firstExperience: "2024-04-05",
+                insurance: "bradesco",
+                tags: ["cardíaco", "check-up"]
+            },
+            {
+                id: 6,
+                name: "Diana Rocha",
+                phone: "(11) 99999-6666",
+                email: "diana.rocha@email.com",
+                city: "São Paulo",
+                birthDate: "1993-11-12",
+                firstExperience: "2024-01-20",
+                insurance: "unimed",
+                tags: ["dermatologia", "manchas"]
+            },
+            {
+                id: 7,
+                name: "Elena Ferreira",
+                phone: "(11) 99999-7777",
+                email: "elena.ferreira@email.com",
+                city: "Osasco",
+                birthDate: "1987-03-25",
+                firstExperience: "2023-12-15",
+                insurance: "amil",
+                tags: ["pediatria", "infantil"]
+            },
+            {
+                id: 8,
+                name: "Fernanda Alves",
+                phone: "(11) 99999-8888",
+                email: "fernanda.alves@email.com",
+                city: "Diadema",
+                birthDate: "1991-07-08",
+                firstExperience: "2024-04-12",
+                insurance: "particular",
+                tags: ["coluna", "ortopedia"]
+            }
+        ];
+
+        let filteredPatients = [...patients];
+        let currentTagFilter = 'all';
+        let currentTags = [];
+
+        // Mobile menu button
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+        
+        // Overlay click to close sidebar
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('sidebar-active');
+            overlay.style.display = sidebar.classList.contains('sidebar-active') ? 'block' : 'none';
+        }
+        
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('sidebar-active');
+            document.getElementById('sidebarOverlay').style.display = 'none';
+        }
+
+        // Patient functions
+        function renderPatientsTable() {
+            const tableBody = document.getElementById('clientsTableBody');
+            tableBody.innerHTML = '';
+            
+            filteredPatients.forEach(patient => {
+                const row = document.createElement('tr');
+                
+                const age = calculateAge(patient.birthDate);
+                const experienceTime = calculateExperienceTime(patient.firstExperience);
+                
+                row.innerHTML = `
+                    <td class="client-name-cell">${patient.name}</td>
+                    <td>${patient.phone}</td>
+                    <td>${patient.city}</td>
+                    <td>${patient.insurance || 'Particular'}</td>
+                    <td>${age} anos</td>
+                    <td>${experienceTime}</td>
+                    <td class="client-tags-cell">
+                        ${patient.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </td>
+                    <td class="client-actions-cell">
+                        <button class="btn btn-secondary btn-small" onclick="editPatient(${patient.id})">Editar</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterPatients() {
+            const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+            
+            filteredPatients = patients.filter(patient => {
+                const matchesSearch = patient.name.toLowerCase().includes(searchTerm) || 
+                                    patient.phone.includes(searchTerm);
+                
+                const matchesTag = currentTagFilter === 'all' || patient.tags.includes(currentTagFilter);
+                
+                return matchesSearch && matchesTag;
+            });
+            
+            renderPatientsTable();
+        }
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        function calculateExperienceTime(firstExperience) {
+            const today = new Date();
+            const first = new Date(firstExperience);
+            const diffTime = Math.abs(today - first);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 30) {
+                return `${diffDays} dias`;
+            } else if (diffDays < 365) {
+                const months = Math.floor(diffDays / 30);
+                return `${months} ${months === 1 ? 'mês' : 'meses'}`;
+            } else {
+                const years = Math.floor(diffDays / 365);
+                return `${years} ${years === 1 ? 'ano' : 'anos'}`;
+            }
+        }
+
+        function editPatient(patientId) {
+            const patient = patients.find(p => p.id === patientId);
+            if (patient) {
+                openPatientModal(patient);
+            }
+        }
+
+        function openPatientModal(patient = null) {
+            const modal = document.getElementById('clientModal');
+            const modalTitle = document.getElementById('clientModalTitle');
+            const form = document.getElementById('clientForm');
+            const deleteBtn = document.getElementById('deleteClientBtn');
+            
+            form.reset();
+            clearTags();
+            
+            if (patient) {
+                modalTitle.textContent = 'Editar Paciente';
+                document.getElementById('clientId').value = patient.id;
+                document.getElementById('clientFullName').value = patient.name;
+                document.getElementById('clientPhoneNumber').value = patient.phone;
+                document.getElementById('clientEmail').value = patient.email || '';
+                document.getElementById('clientCity').value = patient.city;
+                document.getElementById('clientBirthDate').value = patient.birthDate;
+                document.getElementById('clientFirstExperience').value = patient.firstExperience;
+                document.getElementById('clientInsurance').value = patient.insurance || 'particular';
+                
+                patient.tags.forEach(tag => addTag(tag));
+                deleteBtn.style.display = 'block';
+            } else {
+                modalTitle.textContent = 'Novo Paciente';
+                document.getElementById('clientId').value = '';
+                deleteBtn.style.display = 'none';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Tags functionality
+        function addTag(tagText) {
+            if (tagText && !currentTags.includes(tagText)) {
+                currentTags.push(tagText);
+                renderTags();
+            }
+        }
+
+        function removeTag(tagText) {
+            currentTags = currentTags.filter(tag => tag !== tagText);
+            renderTags();
+        }
+
+        function clearTags() {
+            currentTags = [];
+            renderTags();
+        }
+
+        function renderTags() {
+            const tagsInput = document.getElementById('tagsInput');
+            const tagInput = document.getElementById('tagInput');
+            
+            // Clear existing tags
+            const existingTags = tagsInput.querySelectorAll('.tag-item');
+            existingTags.forEach(tag => tag.remove());
+            
+            // Add current tags
+            currentTags.forEach(tag => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag}')">&times;</span>
+                `;
+                tagsInput.insertBefore(tagElement, tagInput);
+            });
+        }
+
+        // Webhook function
+        async function sendToWebhook(patientData, action) {
+            try {
+                const response = await fetch('https://auto.ia-tess.com.br/webhook-test/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        patient: patientData,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao enviar dados para o webhook');
+                }
+
+                console.log('Dados enviados para o webhook com sucesso');
+            } catch (error) {
+                console.error('Erro ao enviar para webhook:', error);
+                alert('Erro ao sincronizar dados. Tente novamente.');
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            document.getElementById('clientSearch').addEventListener('input', filterPatients);
+            
+            // Filter tags functionality
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                    tag.classList.add('active');
+                    currentTagFilter = tag.getAttribute('data-tag');
+                    filterPatients();
+                });
+            });
+
+            // Close modals
+            document.getElementById('closeClientModal').addEventListener('click', () => {
+                document.getElementById('clientModal').style.display = 'none';
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                const clientModal = document.getElementById('clientModal');
+                
+                if (e.target === clientModal) {
+                    clientModal.style.display = 'none';
+                }
+            });
+
+            // Add patient button
+            document.getElementById('addClientBtn').addEventListener('click', () => {
+                openPatientModal();
+            });
+
+            // Tag input
+            document.getElementById('tagInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tagText = e.target.value.trim();
+                    if (tagText) {
+                        addTag(tagText);
+                        e.target.value = '';
+                    }
+                }
+            });
+
+            // Patient form
+            document.getElementById('clientForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const saveBtn = document.getElementById('saveClientBtn');
+                const originalText = saveBtn.textContent;
+                saveBtn.innerHTML = '<span class="loading"></span> Salvando...';
+                saveBtn.disabled = true;
+                
+                const id = document.getElementById('clientId').value;
+                const name = document.getElementById('clientFullName').value;
+                const phone = document.getElementById('clientPhoneNumber').value;
+                const email = document.getElementById('clientEmail').value;
+                const city = document.getElementById('clientCity').value;
+                const birthDate = document.getElementById('clientBirthDate').value;
+                const firstExperience = document.getElementById('clientFirstExperience').value;
+                const insurance = document.getElementById('clientInsurance').value;
+                
+                const patientData = {
+                    id: id ? parseInt(id) : null,
+                    name,
+                    phone,
+                    email,
+                    city,
+                    birthDate,
+                    firstExperience,
+                    insurance,
+                    tags: [...currentTags]
+                };
+                
+                try {
+                    if (id) {
+                        // Editing existing patient
+                        const index = patients.findIndex(p => p.id == id);
+                        if (index !== -1) {
+                            patients[index] = patientData;
+                            await sendToWebhook(patientData, 'update');
+                        }
+                    } else {
+                        // Adding new patient
+                        const newId = Math.max(0, ...patients.map(p => p.id)) + 1;
+                        patientData.id = newId;
+                        patients.push(patientData);
+                        await sendToWebhook(patientData, 'create');
+                    }
+                    
+                    filterPatients();
+                    document.getElementById('clientModal').style.display = 'none';
+                } catch (error) {
+                    console.error('Erro ao salvar paciente:', error);
+                } finally {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }
+            });
+
+            // Delete button
+            document.getElementById('deleteClientBtn').addEventListener('click', async () => {
+                const id = document.getElementById('clientId').value;
+                if (id && confirm('Tem certeza que deseja excluir este paciente?')) {
+                    const patient = patients.find(p => p.id == id);
+                    if (patient) {
+                        try {
+                            await sendToWebhook(patient, 'delete');
+                            patients = patients.filter(p => p.id != id);
+                            filterPatients();
+                            document.getElementById('clientModal').style.display = 'none';
+                        } catch (error) {
+                            console.error('Erro ao excluir paciente:', error);
+                        }
+                    }
+                }
+            });
+
+            // Initialize
+            renderPatientsTable();
+        });
+    </script>
+</body>
+</html>

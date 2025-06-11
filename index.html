@@ -2,543 +2,314 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedCenter - Sistema de Gestão Médica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MedCenter - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Paleta de Cores Médica: Laranja e Azul */
+            --primary-color: #FF8C00; /* Laranja escuro - Cor Principal */
+            --primary-dark: #D2691E; /* Laranja queimado */
+            --primary-light: #FFA500; /* Laranja padrão */
+            --secondary-color: #4682B4; /* Azul aço */
+            --secondary-dark: #1E4D6B; /* Azul marinho mais escuro */
+            --secondary-light: #87CEEB; /* Azul céu */
+            --white: #FFFFFF; /* Branco puro */
+            --gray-light: #F5F5F5; /* Cinza claro */
+            --gray-medium: #808080; /* Cinza médio */
+            --black: #1A1A1A; /* Preto suavizado */
+            
+            /* Cores de Status */
+            --confirmed-color: #4CAF50;
+            --pending-color: #FF9800;
+            --cancelled-color: #F44336;
+            
+            /* Sombras e Efeitos */
+            --card-shadow: 0 8px 32px rgba(210, 105, 30, 0.15);
+            --hover-shadow: 0 12px 40px rgba(210, 105, 30, 0.25);
+            --sidebar-bg: #1E4D6B; /* Azul escuro para sidebar */
+            --sidebar-hover: #2C5D7A;
+            --sidebar-width: 280px;
+            --mobile-header-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+            color: var(--black);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--white);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(26, 26, 26, 0.15);
+            position: relative;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-img {
+            width: 120px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--gray-light);
+        }
+
+        .menu-item {
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            color: var(--gray-light);
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .menu-item.active {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--white);
+            position: relative;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .welcome-message {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-medium);
+            margin-bottom: 40px;
+        }
+
+        .welcome-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .welcome-button {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .welcome-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .welcome-button i {
+            font-size: 1.2rem;
+        }
+
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 992px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .sidebar.sidebar-active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: var(--mobile-header-height) 15px 15px;
+                width: 100%;
+            }
+            
+            .welcome-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Mobile menu button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <!-- Overlay -->
-        <div class="overlay" id="overlay"></div>
-
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-stethoscope"></i>
-                    </div>
-                    <div class="logo-text">
-                        <h1>MedCenter</h1>
-                        <p>Clínica Bim</p>
-                    </div>
-                </div>
+            <div class="logo-container">
+                <img src="https://i.ibb.co/MyPPcBhc/download-1.jpg" alt="MedCenter Logo" class="logo-img">
+                <div class="logo-text">MultSaude</div>
+                <div class="logo-subtitle">Clínica Bim</div>
             </div>
+            <a href="resumo.html" class="menu-item active">Resumo <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="agenda.html" class="menu-item">Agenda <span class="status-badge">Em desenvolvimento</span></a>
+            <a href="pacientes.html" class="menu-item">Pacientes</a>
+            <a href="medicos.html" class="menu-item">Médicos</a>
+            <a href="disparo-campanha.html" class="menu-item">Disparo de campanha</a>
+        </div>
 
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="dashboard">
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 class="welcome-message">Bem-vindo ao Sistema MultSaude</h1>
+            <p class="welcome-subtitle">Selecione uma opção no menu lateral para começar</p>
+            
+            <div class="welcome-buttons">
+                <a href="resumo.html" class="welcome-button">
                     <i class="fas fa-chart-line"></i>
-                    <span>Painel Gerencial</span>
+                    Resumo
                 </a>
-                <a href="#" class="nav-item" data-section="agenda">
+                <a href="agenda.html" class="welcome-button">
                     <i class="fas fa-calendar-alt"></i>
-                    <span>Agenda</span>
+                    Agenda
                 </a>
-                <a href="#" class="nav-item" data-section="patients">
-                    <i class="fas fa-users"></i>
-                    <span>Pacientes</span>
+                <a href="pacientes.html" class="welcome-button">
+                    <i class="fas fa-user-injured"></i>
+                    Pacientes
                 </a>
-                <a href="#" class="nav-item" data-section="doctors">
+                <a href="medicos.html" class="welcome-button">
                     <i class="fas fa-user-md"></i>
-                    <span>Médicos</span>
+                    Médicos
                 </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-details">
-                        <div class="user-name">Admin</div>
-                        <div class="user-role">Administrador</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main content -->
-        <main class="main-content">
-            <div class="content-container">
-                <!-- Dashboard Section -->
-                <div class="page-section active" id="dashboard">
-                    <div class="page-header">
-                        <div class="header-content">
-                            <h1 class="page-title">Painel Gerencial</h1>
-                            <p class="page-subtitle">Visão geral da clínica</p>
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn btn-primary" id="refreshDashboard">
-                                <i class="fas fa-sync-alt"></i>
-                                Atualizar
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Metrics -->
-                    <div class="metrics-grid">
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Consultas Hoje</span>
-                                <i class="fas fa-calendar-day metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="todayAppointments">18</div>
-                            <div class="metric-description">consultas agendadas</div>
-                            <div class="metric-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                12% vs ontem
-                            </div>
-                        </div>
-
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Consultas da Semana</span>
-                                <i class="fas fa-users metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="weekAppointments">120</div>
-                            <div class="metric-description">esta semana</div>
-                            <div class="metric-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                5% vs semana anterior
-                            </div>
-                        </div>
-
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Taxa de Ocupação</span>
-                                <i class="fas fa-chart-pie metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="occupancyRate">85%</div>
-                            <div class="metric-description">dos horários</div>
-                            <div class="metric-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                7% vs semana anterior
-                            </div>
-                        </div>
-
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Novos Pacientes</span>
-                                <i class="fas fa-user-plus metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="newPatients">12</div>
-                            <div class="metric-description">este mês</div>
-                            <div class="metric-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                20% vs mês anterior
-                            </div>
-                        </div>
-
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Faturamento</span>
-                                <i class="fas fa-dollar-sign metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="revenue">R$ 45.200</div>
-                            <div class="metric-description">este mês</div>
-                            <div class="metric-trend positive">
-                                <i class="fas fa-arrow-up"></i>
-                                15% vs mês anterior
-                            </div>
-                        </div>
-
-                        <div class="card metric-card">
-                            <div class="metric-header">
-                                <span class="metric-title">Pendentes</span>
-                                <i class="fas fa-clock metric-icon"></i>
-                            </div>
-                            <div class="metric-value" id="pendingAppointments">3</div>
-                            <div class="metric-description">aguardando confirmação</div>
-                        </div>
-                    </div>
-
-                    <!-- Charts -->
-                    <div class="charts-grid">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Consultas por Especialidade</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="specialtyChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Faturamento Semanal</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="revenueChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Distribuição por Convênio</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="insuranceChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Atividade Recente</h3>
-                            </div>
-                            <div class="activity-list" id="activityList">
-                                <!-- Activity items will be populated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Agenda Section -->
-                <div class="page-section" id="agenda">
-                    <div class="page-header">
-                        <div class="header-content">
-                            <h1 class="page-title">Agenda</h1>
-                            <p class="page-subtitle">Gerencie suas consultas</p>
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn btn-primary" id="newAppointmentBtn">
-                                <i class="fas fa-plus"></i>
-                                Nova Consulta
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Date Navigation -->
-                    <div class="date-nav">
-                        <button class="btn btn-outline" id="prevDay">
-                            <i class="fas fa-chevron-left"></i>
-                            Anterior
-                        </button>
-                        <div class="date-display" id="currentDate">
-                            Terça-feira, 29 de Janeiro de 2025
-                        </div>
-                        <button class="btn btn-outline" id="nextDay">
-                            Próximo
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-
-                    <!-- Specialty Summary -->
-                    <div class="specialty-grid" id="specialtyGrid">
-                        <!-- Specialty cards will be populated by JavaScript -->
-                    </div>
-
-                    <!-- Schedule -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="header-content">
-                                <h3 class="card-title">Agenda do Dia</h3>
-                            </div>
-                            <div class="header-actions">
-                                <select class="form-select" id="doctorFilter">
-                                    <option value="all">Todos os Médicos</option>
-                                    <option value="dr_silva">Dr. Silva</option>
-                                    <option value="dr_santos">Dra. Santos</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="schedule-container">
-                            <div class="schedule-grid" id="scheduleGrid">
-                                <!-- Schedule will be populated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Patients Section -->
-                <div class="page-section" id="patients">
-                    <div class="page-header">
-                        <div class="header-content">
-                            <h1 class="page-title">Pacientes</h1>
-                            <p class="page-subtitle">Gerencie seus pacientes</p>
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn btn-primary" id="newPatientBtn">
-                                <i class="fas fa-plus"></i>
-                                Novo Paciente
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Search and Filters -->
-                    <div class="card">
-                        <div class="card-content">
-                            <div class="search-filters">
-                                <div class="search-container">
-                                    <div class="search-input-container">
-                                        <i class="fas fa-search search-icon"></i>
-                                        <input type="text" class="search-input" id="patientSearch" placeholder="Buscar por nome ou telefone...">
-                                    </div>
-                                </div>
-                                <div class="filters-container" id="patientFilters">
-                                    <!-- Filter tags will be populated by JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Patients Grid -->
-                    <div class="patients-grid" id="patientsGrid">
-                        <!-- Patient cards will be populated by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Doctors Section -->
-                <div class="page-section" id="doctors">
-                    <div class="page-header">
-                        <div class="header-content">
-                            <h1 class="page-title">Médicos</h1>
-                            <p class="page-subtitle">Gerencie os profissionais</p>
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn btn-primary" id="newDoctorBtn">
-                                <i class="fas fa-plus"></i>
-                                Novo Médico
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Doctors Stats -->
-                    <div class="stats-grid">
-                        <div class="card stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-user-md"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="totalDoctors">2</div>
-                                <div class="stat-label">Médicos Ativos</div>
-                            </div>
-                        </div>
-
-                        <div class="card stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-stethoscope"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="totalSpecialties">4</div>
-                                <div class="stat-label">Especialidades</div>
-                            </div>
-                        </div>
-
-                        <div class="card stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-building"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="totalOffices">2</div>
-                                <div class="stat-label">Consultórios</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Doctors Grid -->
-                    <div class="doctors-grid" id="doctorsGrid">
-                        <!-- Doctor cards will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <!-- Appointment Modal -->
-    <div class="modal" id="appointmentModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="appointmentModalTitle">Nova Consulta</h3>
-                <button class="modal-close" id="closeAppointmentModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form class="modal-body" id="appointmentForm">
-                <input type="hidden" id="appointmentId">
-                
-                <div class="form-group">
-                    <label for="patientName">Nome do Paciente</label>
-                    <input type="text" id="patientName" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="patientPhone">Telefone</label>
-                    <input type="tel" id="patientPhone" class="form-input" placeholder="(11) 99999-9999">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="appointmentService">Especialidade</label>
-                        <select id="appointmentService" class="form-select" required>
-                            <option value="">Selecione...</option>
-                            <option value="cardiologia">Cardiologia</option>
-                            <option value="dermatologia">Dermatologia</option>
-                            <option value="pediatria">Pediatria</option>
-                            <option value="ortopedia">Ortopedia</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="appointmentDoctor">Médico</label>
-                        <select id="appointmentDoctor" class="form-select" required>
-                            <option value="">Selecione...</option>
-                            <option value="dr_silva">Dr. Carlos Silva</option>
-                            <option value="dr_santos">Dra. Ana Santos</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="appointmentTime">Horário</label>
-                        <select id="appointmentTime" class="form-select" required>
-                            <option value="">Selecione...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="appointmentStatus">Status</label>
-                        <select id="appointmentStatus" class="form-select" required>
-                            <option value="pendente">Pendente</option>
-                            <option value="confirmado">Confirmado</option>
-                            <option value="cancelado">Cancelado</option>
-                            <option value="concluido">Concluído</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="appointmentInsurance">Convênio</label>
-                    <select id="appointmentInsurance" class="form-select">
-                        <option value="particular">Particular</option>
-                        <option value="unimed">Unimed</option>
-                        <option value="amil">Amil</option>
-                        <option value="sulamerica">SulAmérica</option>
-                        <option value="bradesco">Bradesco Saúde</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="appointmentObservations">Observações</label>
-                    <textarea id="appointmentObservations" class="form-textarea" rows="3" placeholder="Observações sobre a consulta..."></textarea>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" id="cancelAppointment">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Patient Modal -->
-    <div class="modal" id="patientModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="patientModalTitle">Novo Paciente</h3>
-                <button class="modal-close" id="closePatientModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form class="modal-body" id="patientForm">
-                <input type="hidden" id="patientId">
-                
-                <div class="form-group">
-                    <label for="patientFullName">Nome Completo</label>
-                    <input type="text" id="patientFullName" class="form-input" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="patientPhoneNumber">Telefone</label>
-                        <input type="tel" id="patientPhoneNumber" class="form-input" placeholder="(11) 99999-9999" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="patientEmail">E-mail</label>
-                        <input type="email" id="patientEmail" class="form-input" placeholder="paciente@email.com">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="patientCity">Cidade</label>
-                        <input type="text" id="patientCity" class="form-input" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="patientBirthDate">Data de Nascimento</label>
-                        <input type="date" id="patientBirthDate" class="form-input">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="patientFirstExperience">Primeira Consulta</label>
-                        <input type="date" id="patientFirstExperience" class="form-input">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="patientInsurance">Convênio</label>
-                        <select id="patientInsurance" class="form-select">
-                            <option value="particular">Particular</option>
-                            <option value="unimed">Unimed</option>
-                            <option value="amil">Amil</option>
-                            <option value="sulamerica">SulAmérica</option>
-                            <option value="bradesco">Bradesco Saúde</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Tags</label>
-                    <div class="tags-input" id="tagsInput">
-                        <input type="text" class="tag-input" id="tagInput" placeholder="Digite uma tag e pressione Enter">
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" id="cancelPatient">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Patient Details Modal -->
-    <div class="modal large-modal" id="patientDetailsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Detalhes do Paciente</h3>
-                <button class="modal-close" id="closePatientDetailsModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="patientDetailsContent">
-                <!-- Patient details will be populated by JavaScript -->
+                <a href="disparo-campanha.html" class="welcome-button">
+                    <i class="fas fa-bullhorn"></i>
+                    Disparo de campanha
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/agenda.js"></script>
-    <script src="js/patients.js"></script>
-    <script src="js/doctors.js"></script>
-    <script src="js/modals.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        // Mobile menu button
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+        
+        // Overlay click to close sidebar
+        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('sidebar-active');
+            overlay.style.display = sidebar.classList.contains('sidebar-active') ? 'block' : 'none';
+        }
+        
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('sidebar-active');
+            document.getElementById('sidebarOverlay').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
